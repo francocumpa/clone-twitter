@@ -1,24 +1,66 @@
-import logo from './logo.svg';
-import './App.css';
+import {
+  HashRouter as Router,
+  Routes,
+  Route
+} from "react-router-dom";
+import { useEffect, useState, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { ApolloProvider } from "@apollo/client";
+import client from './apollo';
+import Paths from './routes';
+import Storage from "./plugins/storage";
+import AuthContext from "./context/AuthContext";
+import { Container } from 'semantic-ui-react';
 
-function App() {
+// Generate Routes
+const RoutesComponent = (Paths || []).map((item, idx) => (
+  <Route key={idx} path={item.path} element={<item.component />} />
+));
+
+const Location = ({ auth, setAuth }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const token = Storage.get('token');
+
+  useEffect(() => {
+    if (!token) {
+      if (location.pathname !== '/login')
+        navigate('/login');
+    } else {
+      setAuth(Storage.decode(token));
+      if (location.pathname == '/login')
+        navigate('/home');
+    }
+  }, [location]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      {RoutesComponent}
+    </Routes>
+  );
+}
+
+const App = () => {
+  const [auth, setAuth] = useState(null);
+  const logout = () => { }
+  const setUser = (user) => {
+    setAuth(user);
+  }
+  const data = {
+    auth,
+    logout,
+    setUser
+  };
+  return (
+    <ApolloProvider client={client}>
+      <AuthContext.Provider value={data}>
+        <Router>
+          <Container>
+            <Location auth={auth} setAuth={setAuth} />
+          </Container>
+        </Router>
+      </AuthContext.Provider>
+    </ApolloProvider>
   );
 }
 
