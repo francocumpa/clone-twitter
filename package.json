@@ -1,6 +1,7 @@
 {
   "name": "clone-twitter",
   "version": "0.1.0",
+  "homepage": "https://francocumpa.github.io/clone-twitter",
   "private": true,
   "dependencies": {
     "@apollo/client": "^3.10.4",
